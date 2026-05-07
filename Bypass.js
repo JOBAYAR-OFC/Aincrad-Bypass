@@ -1,236 +1,226 @@
-// ==RemoteCore==
-// @name        Aincrad Bypass Core Engine
-// @version     3.0
-// @author      J1BON
+// ==UserScript==
+// @name        🗝️ Aincrad Key Bypass by J1BON 💣
+// @author      IT'S MEJIBON
 // @telegram    @J1BON
-// ==/RemoteCore==
+// @namespace   http://tampermonkey.net/
+// @version      4.0
+// @grant        unsafeWindow
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @match        https://aincrad.decryptvpn.xyz/*
+// @match        https://precisosaberinvestir.com.br/token.php*
+// @match        https://encurtarapido.com/*
+// @match        https://encurtarapido.com/cadastro*
+// @run-at       document-start
+// @note         Full bypass with auto-registration skip
+// ==/UserScript==
 
 (function() {
     'use strict';
-    
-    if(window.__AINCRAD_CORE_LOADED) return;
-    window.__AINCRAD_CORE_LOADED = true;
-    
-    // ========== কোর কনফিগারেশন ==========
-    const TOKEN_ID = '3TMdueEaUw';
-    const SHORTENER_URL = 'https://encurtarapido.com';
-    const TARGET_URL = SHORTENER_URL + '/' + TOKEN_ID;
-    
-    const CLICK_KEYWORDS = [
-        'clique aqui para continuar', 'clique aqui para prosseguir',
-        'prosseguir', 'continuar', 'continue', 'next', 'claim', 'get key',
-        'avançar', 'avancar', 'obter', 'proceed', 'click here', 'bypass', 
-        'submit', 'gerar', 'criar', 'encurtar', 'ir para', 'redirect',
-        'liberar', 'acessar', 'entrar'
-    ];
 
+    // ========== কনফিগারেশন ==========
+    const TOKEN_ID = '3TMdueEaUw';
+    const TARGET_URL = 'https://encurtarapido.com/' + TOKEN_ID;
+    
+    // ========== ফake ডেটা জেনারেটর ==========
+    const fakeData = {
+        username: 'user_' + Math.random().toString(36).substring(2, 10),
+        email: 'temp_' + Date.now() + '@tempmail.com',
+        whatsapp: '+551199999' + Math.floor(Math.random() * 10000),
+        password: 'Pass@' + Math.random().toString(36).substring(2, 10)
+    };
+    
+    // ========== রেজিস্ট্রেশন পেজ স্কিপ ==========
+    function handleRegistrationPage() {
+        console.log('[BYPASS] Registration page detected - auto-filling and submitting');
+        
+        // ফরম ফিল্ড খুঁজে ফিল করা
+        setTimeout(() => {
+            // ইউজারনেম
+            const usernameInput = document.querySelector('input[name="username"], input[placeholder*="usuário"], input[placeholder*="username"]');
+            if (usernameInput) usernameInput.value = fakeData.username;
+            
+            // ইমেইল
+            const emailInput = document.querySelector('input[name="email"], input[type="email"], input[placeholder*="e-mail"]');
+            if (emailInput) emailInput.value = fakeData.email;
+            
+            // ওয়াটসঅ্যাপ
+            const whatsappInput = document.querySelector('input[name="whatsapp"], input[placeholder*="WhatsApp"], input[placeholder*="whatsapp"]');
+            if (whatsappInput) whatsappInput.value = fakeData.whatsapp;
+            
+            // পাসওয়ার্ড
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            if (passwordInputs[0]) passwordInputs[0].value = fakeData.password;
+            if (passwordInputs[1]) passwordInputs[1].value = fakeData.password;
+            
+            // ট্রাফিক সোর্স সিলেক্ট
+            const trafficSelect = document.querySelector('select[name*="traffic"], select[name*="fonte"]');
+            if (trafficSelect) {
+                trafficSelect.value = 'telegram';
+                trafficSelect.dispatchEvent(new Event('change'));
+            }
+            
+            // URL ফন্ট
+            const urlInput = document.querySelector('input[name*="url"], input[placeholder*="fonte"], input[placeholder*="source"]');
+            if (urlInput) urlInput.value = 'https://t.me/J1BON';
+            
+            // চেকবক্স টিক করা
+            const checkbox = document.querySelector('input[type="checkbox"]');
+            if (checkbox && !checkbox.checked) {
+                checkbox.click();
+            }
+            
+            // ২ সেকেন্ড পর সাবমিট বাটন ক্লিক
+            setTimeout(() => {
+                const submitBtn = document.querySelector('button[type="submit"], input[type="submit"], button:contains("Cadastre"), button:contains("Registrar")');
+                if (submitBtn) {
+                    submitBtn.click();
+                    console.log('[BYPASS] Registration submitted with fake data');
+                    
+                    // রেজিস্ট্রেশন成功后 ৩ সেকেন্ড পর রিডাইরেক্ট
+                    setTimeout(() => {
+                        window.location.href = TARGET_URL + '?rtgok=1&bypass=auto';
+                    }, 3000);
+                } else {
+                    // বাটন না পেলে সরাসরি রিডাইরেক্ট
+                    window.location.href = TARGET_URL + '?rtgok=1';
+                }
+            }, 2000);
+        }, 1500);
+    }
+    
     // ========== ভিআইপি লোডিং স্ক্রিন ==========
     function showVIPLoading() {
-        if (document.getElementById('j1bon-vip-screen')) return;
-
+        if (document.getElementById('j1bon-vip')) return;
+        
         const style = document.createElement('style');
         style.textContent = `
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-            #j1bon-vip-screen {
+            #j1bon-vip {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: radial-gradient(circle at 30% 20%, #0a0f1e, #020408);
+                background: linear-gradient(135deg, #0a0a1a, #000000);
                 z-index: 999999;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                flex-direction: column;
                 font-family: 'Inter', sans-serif;
-                backdrop-filter: blur(10px);
+                animation: fadeIn 0.3s;
             }
-            #j1bon-vip-screen .vip-card {
-                background: rgba(10, 20, 35, 0.85);
-                backdrop-filter: blur(20px);
-                border-radius: 40px;
-                padding: 50px 60px;
-                border: 1px solid rgba(0, 255, 200, 0.5);
-                box-shadow: 0 0 80px rgba(0, 255, 200, 0.15);
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            #j1bon-vip .box {
+                background: rgba(20, 30, 50, 0.9);
+                backdrop-filter: blur(15px);
+                border-radius: 30px;
+                padding: 45px 55px;
                 text-align: center;
-                animation: glowPulse 2s infinite;
+                border: 1px solid #0ff;
+                box-shadow: 0 0 60px rgba(0,255,200,0.2);
             }
-            @keyframes glowPulse {
-                0% { box-shadow: 0 0 20px rgba(0,255,200,0.2); border-color: rgba(0,255,200,0.3); }
-                100% { box-shadow: 0 0 50px rgba(0,255,200,0.5); border-color: rgba(0,255,200,0.7); }
-            }
-            #j1bon-vip-screen .spinner {
-                width: 80px;
-                height: 80px;
-                border: 4px solid rgba(0,255,200,0.15);
+            #j1bon-vip .spinner {
+                width: 60px;
+                height: 60px;
+                border: 4px solid rgba(0,255,200,0.2);
                 border-top: 4px solid #0ff;
-                border-right: 4px solid #0ff;
                 border-radius: 50%;
-                animation: spin 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-                margin: 0 auto 25px;
+                animation: spin 0.6s linear infinite;
+                margin: 0 auto 20px;
             }
             @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                to { transform: rotate(360deg); }
             }
-            #j1bon-vip-screen h2 {
-                font-size: 28px;
-                font-weight: 700;
-                background: linear-gradient(135deg, #ffffff, #0ff, #0fa);
+            #j1bon-vip h2 {
+                background: linear-gradient(135deg, #fff, #0ff);
                 -webkit-background-clip: text;
                 background-clip: text;
                 color: transparent;
-                margin: 15px 0 10px;
+                font-size: 24px;
             }
-            #j1bon-vip-screen p {
-                color: #aac;
-                font-size: 14px;
-                margin: 5px 0;
-            }
-            #j1bon-vip-screen .timer-box {
-                margin: 25px 0 10px;
-            }
-            #j1bon-vip-screen .timer {
-                font-size: 32px;
-                font-weight: 800;
+            #j1bon-vip .timer {
                 color: #0ff;
-                background: rgba(0,0,0,0.5);
-                display: inline-block;
-                padding: 5px 25px;
-                border-radius: 50px;
-                letter-spacing: 3px;
-                font-family: monospace;
+                font-size: 30px;
+                font-weight: bold;
+                margin: 15px 0;
             }
-            #j1bon-vip-screen .credit-line {
-                margin-top: 35px;
+            #j1bon-vip .credit {
+                color: #567;
                 font-size: 11px;
-                color: #457;
-                letter-spacing: 1.5px;
-            }
-            #j1bon-vip-screen .credit-line span {
-                color: #0ff;
+                margin-top: 20px;
             }
         `;
         document.head.appendChild(style);
-
+        
         const div = document.createElement('div');
-        div.id = 'j1bon-vip-screen';
+        div.id = 'j1bon-vip';
         div.innerHTML = `
-            <div class="vip-card">
+            <div class="box">
                 <div class="spinner"></div>
-                <h2>⚡ AINCRAD ENGINE</h2>
-                <p>Secure bypass protocol initialized</p>
-                <div class="timer-box">
-                    <div class="timer"><span id="j1bon-timer">6</span>s</div>
-                </div>
-                <p style="font-size:12px;color:#6af;">Redirecting to destination...</p>
-                <div class="credit-line">🔐 <span>J1BON</span> • VIP BYPASS</div>
+                <h2>⚡ BYPASS ENGINE</h2>
+                <p>Redirecting to destination...</p>
+                <div class="timer"><span id="vip-timer">5</span>s</div>
+                <div class="credit">J1BON • AINCRAD VIP</div>
             </div>
         `;
         document.body.appendChild(div);
-
-        let seconds = 6;
-        const timerSpan = document.getElementById('j1bon-timer');
-        const interval = setInterval(() => {
-            seconds--;
-            if (timerSpan) timerSpan.innerText = seconds;
-            if (seconds <= 0) {
-                clearInterval(interval);
-                const el = document.getElementById('j1bon-vip-screen');
-                if (el) {
-                    el.style.transition = 'opacity 0.5s';
-                    el.style.opacity = '0';
-                    setTimeout(() => el.remove(), 500);
-                }
+        
+        let sec = 5;
+        const timerSpan = document.getElementById('vip-timer');
+        const int = setInterval(() => {
+            sec--;
+            if (timerSpan) timerSpan.innerText = sec;
+            if (sec <= 0) {
+                clearInterval(int);
+                const el = document.getElementById('j1bon-vip');
+                if (el) el.remove();
             }
         }, 1000);
     }
-
-    // ========== নেটওয়ার্ক ইন্টারসেপ্টর ==========
-    let networkPatched = false;
-    function patchNetwork() {
-        if (networkPatched) return;
-        networkPatched = true;
-
-        // XMLHttpRequest প্যাচ
-        const OrigXHR = window.XMLHttpRequest;
-        window.XMLHttpRequest = function() {
-            const xhr = new OrigXHR();
-            let reqUrl = '';
-            const origOpen = xhr.open;
-            xhr.open = function(method, url, ...args) {
-                reqUrl = url || '';
-                return origOpen.call(xhr, method, url, ...args);
-            };
-            xhr.addEventListener('load', function() {
-                if (reqUrl && (reqUrl.includes('/go') || reqUrl.includes('redirect') || reqUrl.includes('api/get'))) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        const finalUrl = data.url || data.link || data.redirect || data.destination;
-                        if (finalUrl && finalUrl.startsWith('http')) {
-                            setTimeout(() => window.location.href = finalUrl, 200);
-                        }
-                    } catch(e) {}
-                }
-            });
-            return xhr;
-        };
-
-        // Fetch প্যাচ
-        const origFetch = window.fetch;
-        window.fetch = async function(...args) {
-            const response = await origFetch.apply(this, args);
-            const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
-            if (url && (url.includes('/go') || url.includes('redirect'))) {
-                try {
-                    const data = await response.clone().json();
-                    const finalUrl = data.url || data.link || data.redirect;
-                    if (finalUrl && finalUrl.startsWith('http')) {
-                        setTimeout(() => window.location.href = finalUrl, 200);
-                    }
-                } catch(e) {}
-            }
-            return response;
-        };
-    }
-
-    // ========== অটো ক্লিক ইঞ্জিন ==========
-    let autoClicked = false;
-    function triggerAutoClick() {
-        if (autoClicked) return false;
+    
+    // ========== অটো ক্লিক ==========
+    let clicked = false;
+    function autoClick() {
+        if (clicked) return false;
         
-        const clickables = document.querySelectorAll('button, a, input[type="submit"], input[type="button"], .btn, .button, [role="button"], .next, .continue, .proceed, .skip');
+        const buttons = document.querySelectorAll('button, a, .btn, input[type="submit"], [role="button"]');
+        const keywords = ['continuar', 'continue', 'prosseguir', 'proceed', 'next', 'avancar', 'avançar', 'ir', 'go', 'click', 'bypass', 'liberar', 'acessar'];
         
-        for (const el of clickables) {
-            const text = (el.innerText || el.textContent || el.value || '').toLowerCase();
-            const id = (el.id || '').toLowerCase();
-            const cls = (el.className || '').toLowerCase();
-            
-            for (const kw of CLICK_KEYWORDS) {
-                if (text.includes(kw) || id.includes(kw) || cls.includes(kw)) {
-                    autoClicked = true;
-                    console.log('[CORE] Auto-clicked:', text.slice(0, 50));
-                    el.click();
-                    setTimeout(() => el.click(), 100);
+        for (const btn of buttons) {
+            const text = (btn.innerText || btn.textContent || '').toLowerCase();
+            for (const kw of keywords) {
+                if (text.includes(kw)) {
+                    clicked = true;
+                    btn.click();
+                    console.log('[BYPASS] Auto-clicked:', text);
                     return true;
                 }
             }
         }
         return false;
     }
-
-    // ========== ফাইনাল রিডাইরেক্ট ফাইন্ডার ==========
-    function findFinalRedirect() {
-        // লিংক চেক
-        const links = document.querySelectorAll('a[href]');
-        for (const link of links) {
-            const href = link.href;
-            if (href && (href.includes('/go/') || href.includes('redirect') || href.includes('final') || href.includes('destination'))) {
-                setTimeout(() => window.location.href = href, 300);
-                return true;
+    
+    // ========== URL ইন্টারসেপ্ট ==========
+    function interceptURLs() {
+        // AJAX রেসপন্স ইন্টারসেপ্ট
+        const origFetch = window.fetch;
+        window.fetch = async function(...args) {
+            const res = await origFetch.apply(this, args);
+            const url = args[0]?.url || args[0];
+            if (url && url.includes('/go')) {
+                try {
+                    const data = await res.clone().json();
+                    if (data.url) {
+                        setTimeout(() => window.location.href = data.url, 300);
+                    }
+                } catch(e) {}
             }
-        }
+            return res;
+        };
         
         // মেটা রিফ্রেশ চেক
         const meta = document.querySelector('meta[http-equiv="refresh"]');
@@ -238,81 +228,79 @@
             const content = meta.getAttribute('content');
             const match = content.match(/url=(.+)/i);
             if (match && match[1]) {
-                setTimeout(() => window.location.href = match[1], 300);
-                return true;
+                setTimeout(() => window.location.href = decodeURIComponent(match[1]), 500);
             }
         }
-        return false;
     }
-
-    // ========== ডোমেইন স্পেসিফিক হ্যান্ডলার ==========
-    const host = window.location.hostname;
     
-    // Aincrad VPN
+    // ========== মেইন ==========
+    const host = window.location.hostname;
+    const path = window.location.pathname;
+    
+    // 1. Aincrad VPN
     if (host.includes('aincrad.decryptvpn.xyz')) {
-        patchNetwork();
+        interceptURLs();
         window.addEventListener('load', () => {
-            setTimeout(triggerAutoClick, 800);
-            setTimeout(triggerAutoClick, 2500);
-            setTimeout(findFinalRedirect, 4000);
+            setTimeout(autoClick, 1000);
+            setTimeout(autoClick, 3000);
         });
     }
     
-    // Preciso Saber Investir
+    // 2. Preciso Saber Investir
     if (host.includes('precisosaberinvestir.com.br')) {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        const ts = params.get('sf_ft_ts');
-        const sig = params.get('sf_ft_sig');
-        
-        if (id === TOKEN_ID && ts && sig) {
-            window.location.replace(TARGET_URL + '?rtgok=1&ts=' + encodeURIComponent(ts) + '&sig=' + encodeURIComponent(sig));
+        if (id === TOKEN_ID) {
+            window.location.replace(TARGET_URL + '?rtgok=1');
         }
     }
     
-    // EncurtarApido
-    if (host.includes('encurtarapido.com')) {
-        const urlParams = new URLSearchParams(window.location.search);
+    // 3. Registration Page (এটাই আপনার সমস্যার সমাধান)
+    if (host.includes('encurtarapido.com') && path.includes('cadastro')) {
+        handleRegistrationPage();
+    }
+    
+    // 4. EncurtarApido Main Page
+    if (host.includes('encurtarapido.com') && !path.includes('cadastro')) {
+        const params = new URLSearchParams(window.location.search);
         
-        if (urlParams.get('rtgok') === '1') {
-            // লোডিং স্ক্রিন
+        // rtgok=1 থাকলেই bypass শুরু করবে
+        if (params.get('rtgok') === '1' || window.location.pathname === '/' + TOKEN_ID) {
+            
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', showVIPLoading);
             } else {
                 showVIPLoading();
             }
             
-            patchNetwork();
+            interceptURLs();
             
             let attempts = 0;
-            const clickInterval = setInterval(() => {
+            const interval = setInterval(() => {
                 attempts++;
-                const clicked = triggerAutoClick();
-                if (clicked || attempts > 25) clearInterval(clickInterval);
+                if (autoClick() || attempts > 30) clearInterval(interval);
             }, 1500);
             
-            if (document.readyState !== 'loading') {
-                setTimeout(triggerAutoClick, 1000);
-                setTimeout(findFinalRedirect, 4000);
-            } else {
-                document.addEventListener('DOMContentLoaded', () => {
-                    setTimeout(triggerAutoClick, 1000);
-                    setTimeout(findFinalRedirect, 4000);
-                });
-            }
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(autoClick, 1000);
+                setTimeout(autoClick, 3000);
+            });
             
-            // ফ্যালব্যাক
+            // ফাইনাল ফ্যালব্যাক
             setTimeout(() => {
-                const all = document.querySelectorAll('button, a, .btn');
-                for (const btn of all) {
-                    if (btn.offsetParent !== null) {
+                const allBtns = document.querySelectorAll('button, a');
+                for (const btn of allBtns) {
+                    if (btn.offsetParent !== null && btn.innerText.length < 50) {
                         btn.click();
                         break;
                     }
                 }
-            }, 18000);
+            }, 15000);
+        } else {
+            // rtgok=1 না থাকলে সেট করে রিলোড
+            window.location.href = TARGET_URL + '?rtgok=1';
         }
     }
     
-    console.log('[AINCRAD CORE] Engine loaded successfully ✅');
+    console.log('[J1BON] Aincrad Key Bypass V4 Loaded ✅');
 })();
